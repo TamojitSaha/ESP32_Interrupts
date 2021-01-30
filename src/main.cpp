@@ -3,11 +3,34 @@
 TaskHandle_t Task1, Task2;
 int count1 = 0, lastCount1 = 0, count2 = 0, lastCount2 = 0;
 
-#define BTN_1 GPIO_NUM_10
-#define BTN_2 GPIO_NUM_11
+#define BTN_1 GPIO_NUM_15
+#define BTN_2 GPIO_NUM_17
 
-#define LED_1 GPIO_NUM_12
-#define LED_2 GPIO_NUM_13
+#define LED_1 GPIO_NUM_25
+#define LED_2 GPIO_NUM_26
+
+class InterruptButton
+{
+  // private:
+  // gpio_num_t gpio;
+  // gpio_mode_t gpioDirection;
+  // gpio_pull_mode_t pullMode;
+  // gpio_int_type_t interruptType;
+
+public:
+  void init(gpio_num_t _gpio,
+            gpio_mode_t _gpioDirection,
+            gpio_pull_mode_t _pullMode,
+            gpio_int_type_t _interruptType)
+  {
+    gpio_set_direction(_gpio, _gpioDirection);
+    gpio_set_pull_mode(_gpio, _pullMode);
+    gpio_set_intr_type(_gpio, _interruptType);
+  }
+};
+
+InterruptButton button1, button2;
+
 
 void IRAM_ATTR count1_isr(void *args)
 {
@@ -93,30 +116,22 @@ void led2_init()
 
 void btn1_init(void)
 {
-  gpio_pullup_en(BTN_1);
-  gpio_set_direction(BTN_1, GPIO_MODE_INPUT);
-  gpio_set_intr_type(BTN_1, GPIO_INTR_NEGEDGE);
-  //gpio_install_isr_service(0);
+
+  button1.init(BTN_1, GPIO_MODE_INPUT, GPIO_PULLUP_ONLY, GPIO_INTR_NEGEDGE);
   gpio_isr_handler_add(BTN_1, count1_isr, NULL);
 }
 
 void btn2_init(void)
 {
-  gpio_pullup_en(BTN_2);
-  gpio_set_direction(BTN_2, GPIO_MODE_INPUT);
-  gpio_set_intr_type(BTN_2, GPIO_INTR_NEGEDGE);
-  //gpio_install_isr_service(0);
+
+  button2.init(BTN_2, GPIO_MODE_INPUT, GPIO_PULLUP_ONLY, GPIO_INTR_NEGEDGE);
   gpio_isr_handler_add(BTN_2, count1_isr, NULL);
 }
 
+
+
 void setup()
 {
-  // gpio_config_t buttonConfig;
-
-  // buttonConfig.intr_type = GPIO_INTR_NEGEDGE;
-  // buttonConfig.mode = GPIO_MODE_INPUT;
-  // buttonConfig.pull_down_en = 0;
-  // buttonConfig.pull_up_en = 1;
   //Install the driver’s GPIO ISR handler service, which allows per-pin GPIO interrupt handlers.
   gpio_install_isr_service(0);
   btn1_init();
