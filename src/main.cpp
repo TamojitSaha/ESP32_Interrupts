@@ -1,7 +1,7 @@
 #include <Arduino.h>
 
 TaskHandle_t Task1, Task2;
-int count1 = 0, count2 = 0;
+int count1 = 0, lastCount1 = 0, count2 = 0, lastCount2 = 0;
 
 #define BTN_1 GPIO_NUM_10
 #define BTN_2 GPIO_NUM_11
@@ -48,7 +48,11 @@ void _task1func(void *params)
 
     if (count1 == 10)
       count1 = 0;
-    blink_times(LED_1, (byte)count1);
+    if (count1 != lastCount1)
+    {
+      blink_times(LED_1, (byte)count1);
+      lastCount1 = count1;
+    }
   }
 
   //gpio_uninstall_isr_service
@@ -69,7 +73,11 @@ void _task2func(void *params)
 
     if (count2 == 10)
       count2 = 0;
-    blink_times(LED_2, (byte)count2);
+    if (count2 != lastCount2)
+    {
+      blink_times(LED_2, (byte)count2);
+      lastCount2 = count2;
+    }
   }
 }
 
@@ -136,11 +144,13 @@ void setup()
       &Task2,
       1 //Core ID
   );
-    UBaseType_t uxHighWaterMark;
+  UBaseType_t uxHighWaterMark;
   uxHighWaterMark = uxTaskGetStackHighWaterMark(Task1);
-  Serial.print("Task 1 Stack Size: ");Serial.println(uxHighWaterMark);
+  Serial.print("Task 1 Stack Size: ");
+  Serial.println(uxHighWaterMark);
   uxHighWaterMark = uxTaskGetStackHighWaterMark(Task2);
-  Serial.print("Task 2 Stack Size: ");Serial.println(uxHighWaterMark);
+  Serial.print("Task 2 Stack Size: ");
+  Serial.println(uxHighWaterMark);
 }
 
 void loop()
