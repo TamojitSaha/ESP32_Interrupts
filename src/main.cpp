@@ -25,9 +25,10 @@ void blink_times(gpio_num_t led, byte times)
   {
     for (int i = 0; i < times; i++)
     {
-      gpio_set_level(LED_1, 1);
+      gpio_set_level(led, 1);
       delay(500);
-      gpio_set_level(LED_1, 0);
+      gpio_set_level(led, 0);
+      delay(500);
     }
   }
 }
