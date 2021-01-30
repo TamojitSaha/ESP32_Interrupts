@@ -103,7 +103,6 @@ void btn2_init(void)
 
 void setup()
 {
-
   // gpio_config_t buttonConfig;
 
   // buttonConfig.intr_type = GPIO_INTR_NEGEDGE;
