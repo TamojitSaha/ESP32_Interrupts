@@ -1,13 +1,14 @@
 #include <Arduino.h>
 
 TaskHandle_t Task1, Task2;
-int count1 = 0, lastCount1 = 0, count2 = 0, lastCount2 = 0;
+uint64_t ISRcnt[2] = {0, 0};
+uint32_t ISRmrk[2] = {0, 0};
 
-#define BTN_1 GPIO_NUM_15
-#define BTN_2 GPIO_NUM_17
+#define BTN_1 GPIO_NUM_25
+#define BTN_2 GPIO_NUM_26
 
-#define LED_1 GPIO_NUM_25
-#define LED_2 GPIO_NUM_26
+#define TST_1 GPIO_NUM_32
+#define TST_2 GPIO_NUM_33
 
 class InterruptButton
 {
@@ -34,26 +35,14 @@ InterruptButton button1, button2;
 
 void IRAM_ATTR count1_isr(void *args)
 {
-  count1++;
+  ISRcnt[0] += 1;
+//   ISRmrk[0] = micros();
 }
 
 void IRAM_ATTR count2_isr(void *args)
 {
-  count2++;
-}
-
-void blink_times(gpio_num_t led, byte times)
-{
-  if (times > 0)
-  {
-    for (int i = 0; i < times; i++)
-    {
-      gpio_set_level(led, 1);
-      delay(500);
-      gpio_set_level(led, 0);
-      delay(500);
-    }
-  }
+  ISRcnt[1] += 1;
+  ISRmrk[1] = millis();
 }
 
 void _task1func(void *params)
@@ -64,18 +53,21 @@ void _task1func(void *params)
     // uxTaskGetStackHighWaterMark
     int cpu_id = esp_intr_get_cpu((intr_handle_t)count1_isr);
 
+    if(ISRcnt[0] > 50)
+    {
+      ISRcnt[0] = 0;
+      ISRmrk[0] = micros() - ISRmrk[0];
+    
+    }
+    else
+    {
+      Serial.println(ISRmrk[1] + "\t" + (micros() - ISRmrk[0]));
+    }
+  
     Serial.print("Allocation Result: ");
     Serial.println(esp_err_to_name(allocationStatus));
     Serial.print("count1 ISR running on Core id: ");
     Serial.println(cpu_id);
-
-    if (count1 == 10)
-      count1 = 0;
-    if (count1 != lastCount1)
-    {
-      blink_times(LED_1, (byte)count1);
-      lastCount1 = count1;
-    }
   }
 
   //gpio_uninstall_isr_service
@@ -93,25 +85,17 @@ void _task2func(void *params)
     Serial.println(esp_err_to_name(allocationStatus));
     Serial.print("count2 ISR running on Core id: ");
     Serial.println(cpu_id);
-
-    if (count2 == 10)
-      count2 = 0;
-    if (count2 != lastCount2)
-    {
-      blink_times(LED_2, (byte)count2);
-      lastCount2 = count2;
-    }
   }
 }
 
-void led1_init()
+void tst1_init()
 {
-  gpio_set_direction(LED_1, GPIO_MODE_OUTPUT);
+  gpio_set_direction(TST_1, GPIO_MODE_OUTPUT);
 }
 
-void led2_init()
+void tst2_init()
 {
-  gpio_set_direction(LED_2, GPIO_MODE_OUTPUT);
+  gpio_set_direction(TST_2, GPIO_MODE_OUTPUT);
 }
 
 void btn1_init(void)
@@ -136,26 +120,28 @@ void setup()
   gpio_install_isr_service(0);
   btn1_init();
   btn2_init();
-  led1_init();
-  led2_init();
+  tst1_init();
+  tst2_init();
 
   Serial.begin(115200);
 
   xTaskCreatePinnedToCore(
       _task1func,
       "increment count1",
-      1024,
+      8192,
       NULL,
       1,
       &Task1,
       0);
+
   delay(500); // needed to start-up task1
+
   xTaskCreatePinnedToCore(
       _task2func,
       "increment count2",
-      1024, //stack depth
+      8192, //stack depth
       NULL, //passing params to task
-      1,    //Priority
+      2,    //Priority
       &Task2,
       1 //Core ID
   );
