@@ -1,2 +1,2 @@
 ## Instruction
-Change the folder name at [platformio.ini](./../platformio.ini) for `main.cpp` before building.
+Change the folder name at [platformio.ini](./../platformio.ini#L15) for `main.cpp` before building.
