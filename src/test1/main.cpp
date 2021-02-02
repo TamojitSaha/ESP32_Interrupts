@@ -71,7 +71,7 @@ void blink_times(gpio_num_t led, byte times)
 
 void _task1func(void *params)
 {
-  String taskMessage = "Task 1 running on core ";
+  String taskMessage = "\nTask 1 running on core ";
   taskMessage = taskMessage + xPortGetCoreID();
   // int cpu_id = esp_intr_get_cpu((intr_handle_t)count2_isr);
 
@@ -83,8 +83,10 @@ void _task1func(void *params)
       count1 = 0;
     if (count1 != lastCount1)
     {
+      taskMessage += "\tCount1: " + String(count1);
+      taskMessage += "\tTimeStamp: " + String(millis());
       Serial.println(taskMessage);
-      Serial.println("\nInterrupt in Task 1");
+      taskMessage="";
       UBaseType_t uxHighWaterMark;
       uxHighWaterMark = uxTaskGetStackHighWaterMark(Task1);
       Serial.print("Task 1 Stack Size: ");
@@ -101,7 +103,7 @@ void _task1func(void *params)
 
 void _task2func(void *params)
 {
-  String taskMessage = "Task 2 running on core ";
+  String taskMessage = "\nTask 2 running on core ";
   taskMessage = taskMessage + xPortGetCoreID();
 
   for (;;)
@@ -111,8 +113,10 @@ void _task2func(void *params)
       count2 = 0;
     if (count2 != lastCount2)
     {
+      taskMessage += "\tCount2: " + String(count2);
+      taskMessage += "\tTimeStamp: " + String(millis());
       Serial.println(taskMessage);
-      Serial.println("\nInterrupt in Task 2");
+      taskMessage = "";
       UBaseType_t uxHighWaterMark;
       uxHighWaterMark = uxTaskGetStackHighWaterMark(Task2);
       Serial.print("Task 2 Stack Size: ");
@@ -162,7 +166,7 @@ void setup()
   xTaskCreatePinnedToCore(
       _task1func,
       "increment count1",
-      10000,
+      12000,
       NULL,
       1,
       &Task1,
@@ -171,7 +175,7 @@ void setup()
   xTaskCreatePinnedToCore(
       _task2func,
       "increment count2",
-      10000, //stack depth
+      12000, //stack depth
       NULL,  //passing params to task
       1,     //Priority
       &Task2,
