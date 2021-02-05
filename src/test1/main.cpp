@@ -53,29 +53,26 @@ void IRAM_ATTR count2_isr(void *args)
   count2++;
 }
 
-void blink_times(gpio_num_t led, byte times)
-{
+// void blink_times(gpio_num_t led, byte times)
+// {
 
-  if (times > 0)
-  {
-    for (int i = 0; i < times; i++)
-    {
+//   if (times > 0)
+//   {
+//     for (int i = 0; i < times; i++)
+//     {
 
-      digWrite(led, ON);
-      delay(500);
-      digWrite(led, OFF);
-      delay(500);
-    }
-  }
-}
+//       digWrite(led, ON);
+//       delay(500);
+//       digWrite(led, OFF);
+//       delay(500);
+//     }
+//   }
+// }
 
 void _task1func(void *params)
 {
   String taskMessage = "\nTask 1 running on core ";
   taskMessage = taskMessage + xPortGetCoreID();
-  // int cpu_id = esp_intr_get_cpu((intr_handle_t)count2_isr);
-
-  // taskMessage += "\n Count2 ISR running on Core id:" + cpu_id;
 
   while (true)
   {
@@ -161,8 +158,6 @@ void setup()
   btn2_init();
   // led1_init();
   // led2_init();
-
-  delay(1000);
   xTaskCreatePinnedToCore(
       _task1func,
       "increment count1",
@@ -172,6 +167,7 @@ void setup()
       &Task1,
       0);
   delay(500); // needed to start-up task1
+
   xTaskCreatePinnedToCore(
       _task2func,
       "increment count2",
@@ -180,8 +176,7 @@ void setup()
       1,     //Priority
       &Task2,
       1 //Core ID
-  );
-  delay(500);
+  );  
 }
 
 void loop()
