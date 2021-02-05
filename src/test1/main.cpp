@@ -95,7 +95,7 @@ void _task1func(void *params)
   }
 
   //gpio_uninstall_isr_service
-  //vTaskDelete(NULL);
+  // vTaskDelete(NULL);
 }
 
 void _task2func(void *params)
@@ -122,7 +122,9 @@ void _task2func(void *params)
       lastCount2 = count2;
     }
     delay(10);
+    
   }
+  // vTaskDelete(NULL);
 }
 
 // void led1_init()
@@ -163,7 +165,7 @@ void setup()
       "increment count1",
       12000,
       NULL,
-      1,
+      2,
       &Task1,
       0);
   delay(500); // needed to start-up task1
